@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ClimateEYE: Real-time Environmental Dashboard with Dynamic City Search, Open-Meteo Weather, and AI Climate Assistant.">
+  <title>ClimateEYE — Environmental Intelligence & Climate Assistant</title>
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS for Map Preview -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header>
+    <nav class="navbar" aria-label="Main Navigation">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+          </svg>
+        </div>
+        <span class="brand-title">Climate<span>EYE</span></span>
+      </div>
+
+      <div class="header-badges">
+        <div class="badge-phase" id="badge-phase-status">
+          <span class="badge-pulse"></span>
+          <span>Dynamic Search &amp; Chatbot Active</span>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="container">
+    
+    <!-- Hero Banner -->
+    <section class="hero-banner">
+      <div class="hero-subtitle">Real-Time Atmospheric Intelligence</div>
+      <h1 class="hero-title">Environmental Weather &amp; Climate Monitoring</h1>
+      <p class="hero-desc">
+        Live atmospheric observation platform. Search any city or use your device location to stream live Open-Meteo telemetry and consult the AI Climate Assistant.
+      </p>
+    </section>
+
+    <!-- Global Dynamic Location Search Bar -->
+    <section class="search-section" aria-label="Location Search">
+      <div class="search-bar-wrapper">
+        <span class="search-bar-icon" aria-hidden="true">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </span>
+        <input 
+          id="input-location-search" 
+          type="text" 
+          class="search-bar-input" 
+          placeholder="Search any city or location (e.g., Ahmedabad, Surat, Mumbai, Delhi...)" 
+          autocomplete="off" 
+          aria-autocomplete="list"
+          aria-controls="search-dropdown-menu"
+        />
+        <button id="btn-clear-search" class="btn-clear-search" type="button" aria-label="Clear Search Input" style="display: none;">&times;</button>
+        <button id="btn-execute-search" class="btn-search-trigger" type="button">
+          <span>Search</span>
+        </button>
+      </div>
+
+      <!-- Autocomplete Dropdown List -->
+      <ul id="search-dropdown-menu" class="search-dropdown" role="listbox" style="display: none;"></ul>
+    </section>
+
+    <!-- Error / Notification Banner -->
+    <div id="alert-banner" class="alert-banner" role="alert" aria-live="polite">
+      <div class="alert-header">
+        <svg fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+        <span id="alert-title">Location / Weather Alert</span>
+      </div>
+      <div id="alert-message" class="alert-body">
+        An error occurred during location or atmospheric resolution.
+      </div>
+      <div id="alert-action" class="alert-action" style="display: none;"></div>
+    </div>
+
+    <!-- Main Dashboard Grid -->
+    <div class="dashboard-grid">
+      
+      <!-- Left Column: Controls & Pipeline -->
+      <div class="card action-box">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            Location &amp; Sensor Trigger
+          </h2>
+        </div>
+
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+          Trigger browser GPS to detect your coordinates and pull live atmospheric parameters directly from Open-Meteo.
+        </p>
+
+        <!-- Primary Action Button -->
+        <button id="btn-use-location" class="btn-primary" type="button" aria-label="Use My Location">
+          <span class="btn-icon" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </span>
+          <span class="spinner" aria-hidden="true"></span>
+          <span class="btn-text">Use My Location</span>
+        </button>
+
+        <!-- 4-Step Pipeline Flow Tracker -->
+        <div class="flow-tracker" aria-label="Detection Pipeline">
+          <div class="flow-step" id="step-perm">
+            <div class="step-icon">1</div>
+            <span>Request browser location permission</span>
+          </div>
+          <div class="flow-step" id="step-coords">
+            <div class="step-icon">2</div>
+            <span>Acquire GPS latitude &amp; longitude</span>
+          </div>
+          <div class="flow-step" id="step-backend">
+            <div class="step-icon">3</div>
+            <span>Reverse-geocode location name</span>
+          </div>
+          <div class="flow-step" id="step-weather">
+            <div class="step-icon">4</div>
+            <span>Fetch Open-Meteo atmospheric metrics</span>
+          </div>
+        </div>
+
+        <!-- Diagnostic & Presets Section -->
+        <section class="diagnostic-section" aria-label="Diagnostic Tool">
+          <div class="diagnostic-header">
+            <span class="diagnostic-title">🧪 Quick City Presets</span>
+            <span class="diagnostic-badge">Dynamic</span>
+          </div>
+
+          <!-- Quick Presets -->
+          <div class="quick-tests">
+            <button type="button" class="btn-preset btn-preset-star" id="btn-preset-ahmedabad" data-lat="23.0258" data-lon="72.5873">
+              📍 Ahmedabad
+            </button>
+            <button type="button" class="btn-preset" data-lat="21.1959" data-lon="72.8302">Surat</button>
+            <button type="button" class="btn-preset" data-lat="19.0728" data-lon="72.8826">Mumbai</button>
+            <button type="button" class="btn-preset" data-lat="28.6519" data-lon="77.2315">Delhi</button>
+            <button type="button" class="btn-preset" data-lat="13.0878" data-lon="80.2785">Chennai</button>
+            <button type="button" class="btn-preset" data-lat="51.5074" data-lon="-0.1278">London</button>
+            <button type="button" class="btn-preset" data-lat="35.6762" data-lon="139.6503">Tokyo</button>
+          </div>
+
+          <div class="input-row" style="margin-top: 1rem;">
+            <div class="form-group">
+              <label for="input-test-lat" class="form-label">Latitude</label>
+              <input id="input-test-lat" class="form-input" type="text" placeholder="e.g. 23.0258" value="23.0258">
+            </div>
+            <div class="form-group">
+              <label for="input-test-lon" class="form-label">Longitude</label>
+              <input id="input-test-lon" class="form-input" type="text" placeholder="e.g. 72.5873" value="72.5873">
+            </div>
+            <button id="btn-test-coords" class="btn-secondary" type="button">Fetch</button>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Right Column: Environmental Dashboard & Chatbot -->
+      <div class="main-display-column">
+        
+        <!-- Empty State -->
+        <div id="env-empty-state" class="card empty-state-container">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"/>
+          </svg>
+          <div style="font-weight: 700; font-size: 1.25rem; color: #ffffff;">No Environmental Data Loaded</div>
+          <p style="font-size: 0.95rem; max-width: 420px; color: var(--text-secondary);">
+            Search a city above or click <strong>"📍 Ahmedabad"</strong> to stream live Open-Meteo atmospheric metrics.
+          </p>
+        </div>
+
+        <!-- Skeleton Loading State -->
+        <div id="env-skeleton" class="skeleton-container">
+          <div class="skeleton skeleton-hero"></div>
+          <div class="skeleton-grid">
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+          </div>
+        </div>
+
+        <!-- Populated Environmental Dashboard -->
+        <div id="env-dashboard" class="env-dashboard">
+          
+          <!-- Location Strip -->
+          <div class="location-strip">
+            <div class="location-strip-left">
+              <span id="display-location-name" class="location-strip-title">Ahmedabad, Gujarat, India</span>
+              <span id="display-location-sub" class="location-strip-sub">Observation Point</span>
+            </div>
+            <div class="location-strip-badges">
+              <span id="display-coord-lat" class="coord-tag">23.0258° N</span>
+              <span id="display-coord-lon" class="coord-tag">72.5873° E</span>
+              <span id="display-updated-time" class="coord-tag" style="color: var(--accent-emerald);">Live</span>
+            </div>
+          </div>
+
+          <!-- Atmospheric Condition Hero Card -->
+          <div class="condition-hero-card">
+            <div class="condition-left">
+              <div class="condition-icon-box" id="condition-icon-box">
+                <svg id="hero-weather-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"/>
+                </svg>
+              </div>
+              <div class="condition-meta">
+                <span class="condition-tag">Atmospheric State</span>
+                <h3 id="hero-condition-text" class="condition-title">Overcast</h3>
+                <span id="hero-category-text" class="condition-subtitle">Open-Meteo High Resolution</span>
+              </div>
+            </div>
+
+            <div class="condition-right">
+              <div id="hero-temp-display" class="hero-temp-value">33.5°C</div>
+              <div id="hero-feels-like-display" class="hero-feels-like">Feels like 38.9°C</div>
+            </div>
+          </div>
+
+          <!-- 6-Metric Environmental Grid -->
+          <div class="metrics-grid">
+            
+            <!-- Metric 1: Temperature -->
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">Temperature</span>
+                <div class="metric-icon icon-temp">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span id="val-metric-temp" class="metric-value">33.5</span>
+                <span id="unit-metric-temp" class="metric-unit">°C</span>
+              </div>
+              <div class="metric-footer">
+                <span>Ambient air (2m height)</span>
+              </div>
+            </div>
+
+            <!-- Metric 2: Feels-Like / Apparent Temperature -->
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">Apparent / Feels Like</span>
+                <div class="metric-icon icon-feels">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span id="val-metric-feels" class="metric-value">38.9</span>
+                <span id="unit-metric-feels" class="metric-unit">°C</span>
+              </div>
+              <div class="metric-footer">
+                <span id="sub-metric-feels">Thermal comfort index</span>
+              </div>
+            </div>
+
+            <!-- Metric 3: Relative Humidity -->
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">Relative Humidity</span>
+                <div class="metric-icon icon-humidity">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span id="val-metric-humidity" class="metric-value">52</span>
+                <span id="unit-metric-humidity" class="metric-unit">%</span>
+              </div>
+              <div class="metric-progress-track">
+                <div id="bar-metric-humidity" class="metric-progress-bar bar-cyan" style="width: 52%;"></div>
+              </div>
+            </div>
+
+            <!-- Metric 4: Cloud Cover -->
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">Cloud Cover</span>
+                <div class="metric-icon icon-cloud">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span id="val-metric-cloud" class="metric-value">99</span>
+                <span id="unit-metric-cloud" class="metric-unit">%</span>
+              </div>
+              <div class="metric-progress-track">
+                <div id="bar-metric-cloud" class="metric-progress-bar bar-blue" style="width: 99%;"></div>
+              </div>
+            </div>
+
+            <!-- Metric 5: Precipitation -->
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">Precipitation</span>
+                <div class="metric-icon icon-rain">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v.01M12 14v.01M16 14v.01M9 17v.01M13 17v.01M7 20v.01M11 20v.01M15 20v.01"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span id="val-metric-rain" class="metric-value">0.0</span>
+                <span id="unit-metric-rain" class="metric-unit">mm</span>
+              </div>
+              <div class="metric-footer">
+                <span id="sub-metric-rain">Current surface accumulation</span>
+              </div>
+            </div>
+
+            <!-- Metric 6: Wind Speed -->
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">Wind Speed</span>
+                <div class="metric-icon icon-wind">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span id="val-metric-wind" class="metric-value">5.9</span>
+                <span id="unit-metric-wind" class="metric-unit">km/h</span>
+              </div>
+              <div class="metric-footer">
+                <span id="sub-metric-wind">Anemometer at 10m height</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Radar Map -->
+          <div id="map-container" aria-label="Interactive Location Map"></div>
+
+          <!-- ClimateEYE AI Assistant / Chatbot Widget -->
+          <section class="chatbot-card" aria-label="ClimateEYE AI Assistant">
+            <div class="chatbot-header">
+              <div class="chatbot-header-left">
+                <div class="bot-avatar" aria-hidden="true">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="chatbot-title">ClimateEYE Assistant</h3>
+                  <div class="chatbot-context-tag" id="chatbot-context-pill">
+                    <span class="context-pulse"></span>
+                    <span id="chatbot-context-text">Context: Loading...</span>
+                  </div>
+                </div>
+              </div>
+              <span class="chatbot-badge">Real-time Aware</span>
+            </div>
+
+            <!-- Chat Message Feed -->
+            <div id="chatbot-messages" class="chatbot-messages" role="log" aria-live="polite">
+              <!-- Dynamically populated messages -->
+            </div>
+
+            <!-- Suggested Prompt Chips -->
+            <div class="chat-prompt-chips">
+              <button type="button" class="btn-prompt-chip" data-query="Give me a climate summary for this location">📊 Climate Summary</button>
+              <button type="button" class="btn-prompt-chip" data-query="What is the thermal comfort and feels-like temperature?">🌡️ Thermal Comfort</button>
+              <button type="button" class="btn-prompt-chip" data-query="Is it raining or expected to rain?">🌧️ Rain Risk</button>
+              <button type="button" class="btn-prompt-chip" data-query="Is it safe for outdoor exercise or running?">🏃 Outdoor Activity</button>
+            </div>
+
+            <!-- Chat Input Box -->
+            <form id="form-chatbot" class="chatbot-input-row" onsubmit="return false;">
+              <input 
+                id="input-chatbot-msg" 
+                type="text" 
+                class="chatbot-input" 
+                placeholder="Ask about this location's climate, rain risk, humidity..." 
+                autocomplete="off" 
+              />
+              <button id="btn-chatbot-send" type="submit" class="btn-chatbot-send" aria-label="Send Message">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                </svg>
+              </button>
+            </form>
+          </section>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer>
+    ClimateEYE Intelligence Platform &bull; Dynamic Forward Geocoding &bull; Open-Meteo Telemetry
+  </footer>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Application Logic -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
