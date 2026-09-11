@@ -1,9 +1,242 @@
-# ClimateEye_AI
+# ClimateEye AI
 
-AI-powered climate intelligence, environmental monitoring, and predictive analysis.
+> **"See Earth through data. Understand it through AI."**
 
-## Overview
-ClimateEye AI is an AI-powered environmental intelligence chatbot designed to help users understand the weather and environmental conditions of any selected location using real-world data. The system allows users to either share their current location or search for another location, after which it retrieves relevant environmental information such as temperature, feels-like temperature, humidity, cloud cover, precipitation, wind speed, and historical weather trends. The chatbot then uses AI to interpret this information and provide simple, conversational explanations instead of presenting users with complex raw data. The project aims to go beyond a traditional weather application by combining artificial intelligence with Earth-observation technology. In its future scope, ClimateEye AI can integrate satellite data such as Sentinel Earth-observation imagery to provide insights into vegetation, land conditions, and environmental changes. The project primarily supports SDG 13: Climate Action by improving access to understandable environmental information and encouraging greater awareness of changing environmental conditions. The overall vision of ClimateEye AI is to make complex climate and Earth data accessible to everyone through a simple, intelligent, and interactive chatbot.
+ClimateEye AI is an AI-powered environmental intelligence platform designed to deliver real-time meteorological insight, climate risk awareness, and conversational intelligence for any location on Earth.
 
-## Getting Started
-ClimateEye AI is designed as a full-stack web application consisting of a responsive frontend, a Python-based backend, external environmental data APIs, and an AI chatbot. The application begins by allowing the user to either provide their current location through browser-based geolocation or search for another location using a geocoding service. The selected location is converted into latitude and longitude coordinates, which are then used by the backend to retrieve real-time weather information from the Open-Meteo API. The retrieved data includes parameters such as temperature, apparent temperature, humidity, cloud cover, precipitation, wind speed, and other available weather indicators. The backend processes this information and provides it to the frontend dashboard as well as the AI chatbot as contextual information. The chatbot uses this real environmental data to answer questions about the selected location while being instructed not to invent or fabricate measurements. Historical weather data can also be retrieved to calculate averages, trends, and changes over a selected period, allowing the system to provide climate-related insights while clearly distinguishing short-term weather from long-term climate patterns. The application can be developed using React, Vite, TypeScript, and Tailwind CSS for the frontend and Python with FastAPI for the backend, while AI functionality can be connected through an LLM API using secure environment variables. The architecture is also designed to support future integration with Earth-observation platforms such as Copernicus Sentinel, allowing ClimateEye AI to eventually analyze satellite-based environmental information such as vegetation and land-surface changes. Privacy and security are important parts of the system, so precise location should not be stored unnecessarily and API credentials must remain on the backend. The application should include proper loading states, API error handling, location-permission handling, invalid-location handling, and fallback options so that users can continue using the search feature if location access is denied. The final system therefore follows the flow of User → Location → Environmental APIs → Data Processing → AI Analysis → Environmental Insight, creating a scalable foundation for an AI-powered climate and Earth-observation assistant
+---
+
+## 1. What ClimateEye AI Is
+
+ClimateEye AI empowers individuals, researchers, and climate advocates to observe planetary conditions through transparent data and understand them through contextual AI. 
+
+In its complete vision, users will be able to:
+1. Detect their current location or search for any global place.
+2. Retrieve real-time, high-precision weather and environmental indicators (temperature, humidity, precipitation, wind dynamics, cloud cover, and severe condition warnings).
+3. Chat with an AI assistant specifically grounded in localized environmental datasets.
+4. Analyze historical climate trends and anomaly shifts.
+5. Ingest Earth observation and satellite data for deep geospatial insights.
+
+---
+
+## 2. Project Architecture
+
+The application enforces a decoupled full-stack architecture where frontend client code and backend business logic are strictly separated:
+
+```
+                      ┌────────────────────────────────┐
+                      │          User Client           │
+                      └───────────────┬────────────────┘
+                                      │
+                                      ▼
+                      ┌────────────────────────────────┐
+                      │    React + Vite + TypeScript   │
+                      │         (Frontend UI)          │
+                      └───────────────┬────────────────┘
+                                      │ HTTP / REST
+                                      ▼
+                      ┌────────────────────────────────┐
+                      │       FastAPI Backend          │
+                      │       (Python + ASGI)          │
+                      └───────┬───────────────┬────────┘
+                              │               │
+            ┌─────────────────┴────┐     ┌────┴─────────────────┐
+            │                      │     │                      │
+            ▼                      ▼     ▼                      ▼
+┌───────────────────────┐ ┌────────────┐ ┌────────────────────────┐
+│   Geocoding Service   │ │ Weather    │ │   Gemini AI Service    │
+│   (Open-Meteo API)    │ │ Service    │ │   (google-genai SDK)   │
+└───────────────────────┘ └────────────┘ └────────────────────────┘
+            │                      │                    │
+            └───────────┬──────────┘                    │
+                        ▼                               ▼
+            ┌────────────────────────┐      ┌───────────────────────┐
+            │   External Weather &   │      │   Google AI Studio    │
+            │     Geocoding APIs     │      │      Gemini API       │
+            └────────────────────────┘      └───────────────────────┘
+```
+
+---
+
+## 3. Technologies Used
+
+### Frontend
+- **React (v18+)**: Component-driven UI rendering.
+- **Vite**: Rapid, modern frontend build tool and dev server.
+- **TypeScript**: Static typing for maintainable, type-safe development.
+- **Modern CSS**: Vanilla CSS design system with dark-mode aesthetic and glassmorphism.
+
+### Backend
+- **FastAPI**: Modern, high-performance web framework for building APIs with Python.
+- **Uvicorn**: Lightning-fast ASGI web server.
+- **google-genai**: Google's official, current Python SDK for Gemini models.
+- **Open-Meteo**: Free, open meteorological and geocoding APIs (no API keys required).
+- **HTTPX**: Modern async HTTP client for external service integration.
+- **python-dotenv**: Environment variable management.
+
+---
+
+## 4. Folder Structure
+
+```
+ClimateEye_AI/
+├── backend/
+│   ├── app/
+│   │   ├── routes/
+│   │   │   ├── __init__.py
+│   │   │   ├── chat.py           # /api/chat endpoint
+│   │   │   ├── location.py       # /api/location/search endpoint
+│   │   │   └── weather.py        # /api/weather endpoint
+│   │   ├── services/
+│   │   │   ├── __init__.py
+│   │   │   ├── gemini_service.py # Gemini AI client & generation logic
+│   │   │   ├── geocoding_service.py # Open-Meteo Geocoding
+│   │   │   └── weather_service.py   # Open-Meteo Weather data fetching
+│   │   ├── __init__.py
+│   │   └── main.py               # FastAPI entry point & CORS configuration
+│   ├── .env.example              # Template for environment variables
+│   └── requirements.txt          # Python dependencies
+├── frontend/
+│   ├── src/
+│   │   ├── services/
+│   │   │   ├── api.ts            # Base HTTP client with error handling
+│   │   │   ├── chatService.ts    # Frontend chat API bridge
+│   │   │   ├── locationService.ts# Frontend location API bridge
+│   │   │   └── weatherService.ts # Frontend weather API bridge
+│   │   ├── App.tsx               # Main application component
+│   │   ├── index.css             # Dark-mode environmental styling
+│   │   └── main.tsx              # React mounting point
+│   ├── index.html                # HTML template with Google Fonts
+│   ├── package.json              # Node.js dependencies and scripts
+│   ├── tsconfig.json             # TypeScript configuration
+│   └── vite.config.ts            # Vite dev server and proxy setup
+├── .gitignore                    # Git ignore rules for secrets and builds
+└── README.md                     # Project documentation
+```
+
+---
+
+## 5. Installation Requirements
+
+Make sure the following runtimes are installed on your system:
+- **Python**: Version 3.10 or newer (tested with Python 3.14).
+- **Node.js**: Version 18 or newer (tested with Node.js LTS v24 / npm v11).
+- **Git**: For version control.
+
+---
+
+## 6. How to Create the Python Virtual Environment
+
+From the project root directory (`ClimateEye_AI`):
+
+### Windows (PowerShell):
+```powershell
+python -m venv .venv
+.venv\Scripts\activate
+```
+
+### macOS / Linux:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+*(When active, you will see `(.venv)` displayed at the start of your terminal line).*
+
+---
+
+## 7. How to Install Backend Dependencies
+
+With the virtual environment activated, install the required packages:
+
+```powershell
+pip install -r backend/requirements.txt
+```
+
+---
+
+## 8. How to Install Frontend Dependencies
+
+Open a new terminal or navigate to the `frontend` folder to install npm packages:
+
+```powershell
+cd frontend
+npm install
+cd ..
+```
+
+Or from the project root:
+```powershell
+npm --prefix frontend install
+```
+
+---
+
+## 9. How to Configure `.env`
+
+Create a private `.env` file inside `backend/`:
+
+1. Copy the template:
+   ```powershell
+   copy backend\.env.example backend\.env
+   ```
+2. Open `backend/.env` in an editor.
+3. Obtain a free Gemini API key from [Google AI Studio](https://aistudio.google.com/).
+4. Add your key:
+   ```env
+   GEMINI_API_KEY=your_actual_gemini_api_key_here
+   ```
+
+> **Security Note**: Never commit `backend/.env` to Git. It is already included in `.gitignore`. Never expose your Gemini API key inside frontend code.
+
+---
+
+## 10. How to Start the Backend
+
+From the project root with the virtual environment activated:
+
+```powershell
+uvicorn backend.app.main:app --reload --port 8000
+```
+
+The FastAPI server will be accessible at:
+- API Base: `http://127.0.0.1:8000`
+- Interactive Swagger Docs: `http://127.0.0.1:8000/docs`
+- Health Endpoint: `http://127.0.0.1:8000/health`
+
+---
+
+## 11. How to Start the Frontend
+
+From the project root:
+
+```powershell
+npm --prefix frontend run dev
+```
+
+The React + Vite application will be available at:
+- Web App: `http://localhost:5173`
+
+The frontend includes an automated health badge that connects to `http://127.0.0.1:8000/health` and verifies that the backend is online.
+
+---
+
+## 12. Available API Routes
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/` | Root endpoint displaying service identity. |
+| `GET` | `/health` | Diagnostic health check returning service name and version. |
+| `GET` | `/api/weather` | Retrieve weather metrics (accepts `?latitude=&longitude=`). |
+| `GET` | `/api/location/search` | Dynamic geocoding lookup (accepts `?q=city_name`). |
+| `POST` | `/api/chat` | Environmental intelligence conversational endpoint. |
+
+---
+
+## 13. Planned Development Phases
+
+- **Phase 1 (Current)**: Development environment, separate React + FastAPI architecture, service contracts, and security practices.
+- **Phase 2**: Real-time location search and interactive Open-Meteo weather dashboard.
+- **Phase 3**: Environmental intelligence chatbot powered by Google Gemini and real-time climate context.
+- **Phase 4**: Historical climate trends and anomaly analysis.
+- **Phase 5**: Earth observation / satellite data integration.
